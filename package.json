@@ -1,5 +1,5 @@
 {
-  "name": "TODO API",
+  "name": "TodoAPI",
   "version": "1.0.0",
   "description": "A TODO API built with Node & MongoDB",
   "main": "server.js",
