@@ -1,4 +1,5 @@
 var express = require("express");
+var cors = require('cors')
 var path = require("path");
 var bodyParser = require("body-parser");
 var mongodb = require("mongodb");
@@ -9,6 +10,9 @@ var MONGODB_URI = process.env.NODE_ENV === 'production' ? process.env.MONGODB_UR
 var TODO_COLLECTION = "todos";
 
 var app = express();
+
+app.use(cors());
+
 app.use(bodyParser.json());
 
 // Create a database variable outside of the database connection callback to reuse the connection pool in your app.
