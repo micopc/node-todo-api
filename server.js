@@ -4,6 +4,8 @@ var bodyParser = require("body-parser");
 var mongodb = require("mongodb");
 var ObjectID = mongodb.ObjectID;
 
+var MONGODB_URI = process.env.NODE_ENV === 'production' ? process.env.MONGODB_URI : 'mongodb://localhost:27017/todoapi';
+
 var TODO_COLLECTION = "todos";
 
 var app = express();
@@ -13,7 +15,7 @@ app.use(bodyParser.json());
 var db;
 
 // Connect to the database before starting the application server.
-mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
+mongodb.MongoClient.connect(MONGODB_URI, function (err, database) {
   if (err) {
     console.log(err);
     process.exit(1);
@@ -24,7 +26,7 @@ mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
   console.log("Database connection ready");
 
   // Initialize the app.
-  var server = app.listen(process.env.PORT || 8080, function () {
+  var server = app.listen(process.env.PORT || 3000, function () {
     var port = server.address().port;
     console.log("App now running on port", port);
   });
@@ -36,8 +38,8 @@ function handleError(res, reason, message, code) {
   res.status(code || 500).json({"error": message});
 }
 
-app.get("/contacts", function(req, res) {
-  db.collection(TODO_COLLECTION).find({}).toArray(function(err, docs) {
+app.get("/:studentID/todos", function(req, res) {
+  db.collection(TODO_COLLECTION).find({ studentID: req.params.studentID }).toArray(function(err, docs) {
     if (err) {
       handleError(res, err.message, "Failed to get ToDos.");
     } else {
@@ -46,18 +48,32 @@ app.get("/contacts", function(req, res) {
   });
 });
 
-app.post("/contacts", function(req, res) {
-  var newToDo = req.body;
-
+app.post("/:studentID/todos", function(req, res) {
   if (!(req.body.text)) {
-    handleError(res, "Invalid input", "Must provide a Todo text.", 400);
+    handleError(res, "Invalid input", "Must provide a ToDo text.", 400);
   }
+
+  var newToDo = {
+    text: req.body.text,
+    studentID: req.params.studentID,
+    completed: false,
+  };
 
   db.collection(TODO_COLLECTION).insertOne(newToDo, function(err, doc) {
     if (err) {
       handleError(res, err.message, "Failed to create new ToDo.");
     } else {
       res.status(201).json(doc.ops[0]);
+    }
+  });
+});
+
+app.put("/:studentID/todos/:id", function(req, res) {
+  db.collection(TODO_COLLECTION).updateOne({_id: new ObjectID(req.params.id)}, { $set: { completed: req.body.completed } }, function(err, doc) {
+    if (err) {
+      handleError(res, err.message, "Failed to update ToDo");
+    } else {
+      res.status(204).end();
     }
   });
 });
