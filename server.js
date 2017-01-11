@@ -45,7 +45,7 @@ function handleError(res, reason, message, code) {
 app.get("/:studentID/todos", function(req, res) {
   db.collection(TODO_COLLECTION).find({ studentID: req.params.studentID }).toArray(function(err, docs) {
     if (err) {
-      handleError(res, err.message, "Failed to get Todos.");
+      return handleError(res, err.message, "Failed to get Todos.");
     } else {
       res.status(200).json(docs);
     }
@@ -54,7 +54,7 @@ app.get("/:studentID/todos", function(req, res) {
 
 app.post("/:studentID/todos", function(req, res) {
   if (!(req.body.text)) {
-    handleError(res, "Invalid input", "Must provide a Todo text.", 400);
+    return handleError(res, "Invalid input", "Must provide a Todo text.", 400);
   }
 
   var newToDo = {
@@ -65,7 +65,7 @@ app.post("/:studentID/todos", function(req, res) {
 
   db.collection(TODO_COLLECTION).insertOne(newToDo, function(err, doc) {
     if (err) {
-      handleError(res, err.message, "Failed to create new Todo.");
+      return handleError(res, err.message, "Failed to create new Todo.");
     } else {
       res.status(201).json(doc.ops[0]);
     }
@@ -75,7 +75,7 @@ app.post("/:studentID/todos", function(req, res) {
 app.put("/:studentID/todos/:id", function(req, res) {
   db.collection(TODO_COLLECTION).updateOne({_id: new ObjectID(req.params.id)}, { $set: { completed: req.body.completed } }, function(err, doc) {
     if (err) {
-      handleError(res, err.message, "Failed to update Todo");
+      return handleError(res, err.message, "Failed to update Todo");
     } else {
       res.status(204).end();
     }
@@ -85,7 +85,7 @@ app.put("/:studentID/todos/:id", function(req, res) {
 app.delete("/:studentID/todos/:id", function(req, res) {
   db.collection(TODO_COLLECTION).deleteOne({_id: new ObjectID(req.params.id)}, function(err, result) {
     if (err) {
-      handleError(res, err.message, "Failed to delete Todo");
+      return handleError(res, err.message, "Failed to delete Todo");
     } else {
       res.status(204).end();
     }
